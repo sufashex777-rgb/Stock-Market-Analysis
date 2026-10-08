@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أ.د/ محمد كمال - كبير محللى البورصة المصرية</title>
+  <!-- TradingView Widget Script -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0e17;
+      --card-bg: #131b2e;
+      --card-border: #202b42;
+      --input-bg: #1a243a;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-blue: #3b82f6;
+      --accent-yellow: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    html.light {
+      --bg-dark: #f1f5f9;
+      --card-bg: #ffffff;
+      --card-border: #cbd5e1;
+      --input-bg: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
+    body { background-color: var(--bg-dark); color: var(--text-main); padding-bottom: 40px; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 15px; }
+    
+    header { background-color: var(--card-bg); border-bottom: 1px solid var(--card-border); padding: 15px 20px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .site-title { font-size: 1.25rem; font-weight: 800; color: var(--accent-green); display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
+    
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-action { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .btn-action:hover { border-color: var(--accent-green); }
+
+    .card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+    
+    input, select, button { width: 100%; background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-main); padding: 12px; border-radius: 10px; outline: none; margin-top: 6px; }
+    input:focus { border-color: var(--accent-green); }
+
+    .search-results { position: absolute; width: 100%; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; margin-top: 5px; max-height: 250px; overflow-y: auto; z-index: 50; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .search-item { padding: 12px; border-bottom: 1px solid var(--card-border); cursor: pointer; display: flex; justify-content: space-between; }
+    .search-item:hover { background: var(--input-bg); }
+
+    .fav-btn { width: auto; margin-top: 0; background: var(--input-bg); border: 1px solid var(--card-border); color: var(--accent-yellow); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+    .tv-link-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(59, 130, 246, 0.15); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none; margin-top: 4px; }
+    .tv-link-btn:hover { background: var(--accent-blue); color: #fff; }
+
+    .stock-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 15px; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; text-align: center; }
+
+    .stat-item { background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); }
+    .stat-label { font-size: 0.75rem; color: var(--text-muted); display: block; }
+    .stat-val { font-size: 1rem; font-weight: bold; font-family: monospace; }
+
+    .indicator-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--card-border); font-size: 0.85rem; }
+    
+    #tradingview_chart { height: 600px; border-radius: 12px; overflow: hidden; border: 1px solid var(--card-border); }
+
+    .modal-overlay { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 200; padding: 15px; }
+    .modal-content { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
+    .close-modal { position: absolute; left: 15px; top: 15px; background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; width: auto; }
+    
+    .loading-status { font-size: 0.8rem; color: var(--accent-yellow); margin-top: 4px; display: inline-block; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="site-title">📈 أ.د/ محمد كمال - كبير محللى البورصة المصرية</div>
+    <div class="header-actions">
+      <button class="btn-action" onclick="openFavoritesModal()">⭐ المفضلة</button>
+      <button class="btn-action" onclick="toggleTheme()">
+        <span id="themeIcon">🌙</span> <span id="themeText">الوضع الليلي</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Search -->
+    <div style="position: relative; margin-bottom: 20px;">
+      <label style="font-size: 0.85rem; color: var(--text-muted);">ابحث عن أسهم البورصة المصرية تحديث مباشر من TradingView:</label>
+      <input type="text" id="searchInput" oninput="filterStocks()" placeholder="ابحث باسم السهم (مثل ARCC, COMI, TMGH, SWDY)...">
+      <div id="searchResults" class="search-results" style="display: none;"></div>
+    </div>
+
+    <!-- Main Stock Section -->
+    <div class="card">
+      <div class="stock-header">
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <h2 id="selectedStockName" style="font-size: 1.5rem;">العربية للأسمنت</h2>
+            <button class="fav-btn" onclick="toggleFavorite()" id="favToggleBtn">⭐ إضافة للمفضلة</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap;">
+            <span id="selectedStockSymbol" style="color: var(--accent-green); font-family: monospace; font-weight: bold;">EGX:ARCC</span>
+            <a id="tvExternalLink" href="https://www.tradingview.com/symbols/EGX-ARCC/" target="_blank" class="tv-link-btn">
+              🔗 فتح الشارت الكامل بـ TradingView
+            </a>
+          </div>
+        </div>
+        
+        <div id="tv_ticker_widget" style="min-width: 220px;"></div>
+      </div>
+
+      <!-- Chart with Swing High/Low, MACD, RSI, and Stochastic Indicators -->
+      <div id="tradingview_chart"></div>
+
+      <!-- حاسبة أهداف الحركة السعرية ومستويات الامتداد -->
+      <div class="card" style="margin-top: 20px; padding: 18px; border-color: var(--accent-green); background: rgba(16, 185, 129, 0.03);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+          <h3 style="color: var(--accent-green); font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+            🎯 حاسبة أهداف حركة السهم (Fibonacci Wave Targets)
+          </h3>
+          <span id="apiStatus" class="loading-status">🔄 جاري سحب الأسعار المباشرة...</span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; margin-top: 6px;">
+          يتم جلب الأسعار تلقائيًا لحظة اختياك السهم، كما يمكنك تعديلها يدويًا عند الحاجة:
+        </p>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px;">
+          <div style="flex: 1; min-width: 130px;">
+            <label style="font-size: 0.75rem; color: var(--text-muted);">أعلى سعر (High):</label>
+            <input type="number" id="targetHigh" value="67.70" step="0.01" oninput="runCalculations()">
+          </div>
+          <div style="flex: 1; min-width: 130px;">
+            <label style="font-size: 0.75rem; color: var(--text-muted);">أقل سعر (Low):</label>
+            <input type="number" id="targetLow" value="63.50" step="0.01" oninput="runCalculations()">
+          </div>
+          <div style="flex: 1; min-width: 130px;">
+            <label style="font-size: 0.75rem; color: var(--text-muted);">سعر الإغلاق (Close):</label>
+            <input type="number" id="targetClose" value="66.50" step="0.01" oninput="runCalculations()">
+          </div>
+        </div>
+
+        <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+          <div class="stat-item" style="border-color: var(--accent-blue);">
+            <span class="stat-label">مدى الحركة السعرية:</span>
+            <span class="stat-val" id="calcRange" style="color: var(--accent-blue);">4.20 ج.م</span>
+          </div>
+          <div class="stat-item" style="border-color: var(--accent-yellow);">
+            <span class="stat-label">🎯 الهدف الأول (61.8% / Pivot):</span>
+            <span class="stat-val" id="target1Val" style="color: var(--accent-yellow);">66.52 ج.م</span>
+          </div>
+          <div class="stat-item" style="border-color: var(--accent-green);">
+            <span class="stat-label">🚀 الهدف الثاني (127.2% Ext):</span>
+            <span class="stat-val" id="target2Val" style="color: var(--accent-green);">68.24 ج.م</span>
+          </div>
+          <div class="stat-item" style="border-color: var(--accent-green);">
+            <span class="stat-label">🔥 الهدف الثالث (161.8% Golden):</span>
+            <span class="stat-val" id="target3Val" style="color: var(--accent-green);">70.76 ج.م</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Indicators Grid -->
+      <div class="grid-2" style="margin-bottom: 20px;">
+        <div class="card" style="margin:0; padding:15px;">
+          <h4 style="border-bottom: 1px solid var(--card-border); padding-bottom: 8px; margin-bottom: 10px;">📊 مؤشرات الزخم والتحليل الفني</h4>
+          <div class="indicator-row"><span>مؤشر MACD (التقاطع والزخم):</span><b style="color: var(--accent-green);">تقاطع إيجابي / صاعد (شراء)</b></div>
+          <div class="indicator-row"><span>مؤشر Stochastic Oscillator:</span><b style="color: var(--accent-yellow);">68 (شراء إيجابي - مدمج بالشارت)</b></div>
+          <div class="indicator-row"><span>مؤشر RSI (14):</span><b style="color: var(--accent-green);">58.2 (اتجاه إيجابي)</b></div>
+          <div class="indicator-row"><span>المتوسط المتحرك الأسي (EMA 20/50):</span><b style="color: var(--accent-green);">اتجاه صاعد فوق المتوسطات</b></div>
+        </div>
+
+        <div class="card" style="margin:0; padding:15px; border-color: var(--accent-blue);">
+          <h4 style="border-bottom: 1px solid var(--card-border); padding-bottom: 8px; margin-bottom: 10px; color: var(--accent-blue);">📍 مستويات الدعم والمقاومة الفعالة (Swing High/Low)</h4>
+          <div class="indicator-row"><span>المقاومة الثانية (R2):</span><b id="sr_r2" style="color: var(--accent-red);">--</b></div>
+          <div class="indicator-row"><span>المقاومة الأولى (R1):</span><b id="sr_r1" style="color: var(--accent-red);">--</b></div>
+          <div class="indicator-row"><span>الدعم الأول (S1):</span><b id="sr_s1" style="color: var(--accent-green);">--</b></div>
+          <div class="indicator-row"><span>الدعم الثاني (S2):</span><b id="sr_s2" style="color: var(--accent-green);">--</b></div>
+        </div>
+      </div>
+
+      <!-- Portfolio Setup for Live Risk Calculations -->
+      <div style="background: var(--input-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--card-border);">
+        <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--accent-blue);">💼 حساب كمية التبريد والمحفظة بناءً على سعر الشراء الخاص بك:</h4>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 200px;">
+            <label style="font-size: 0.75rem; color: var(--text-muted);">سعر الشراء الخاص بك (ج.م):</label>
+            <input type="number" id="currentStockPrice" value="68.00" step="0.01" oninput="runCalculations()">
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <label style="font-size: 0.75rem; color: var(--text-muted);">عدد الأسهم المملوكة بالمحفظة:</label>
+            <input type="number" id="currentStockQty" value="1000" oninput="runCalculations()">
+          </div>
+        </div>
+      </div>
+
+      <!-- حاسبة التبريد الذكي واستراتيجية الخروج الآمن بدون خسارة -->
+      <div class="card" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.3); margin-top: 0;">
+        <h3 style="color: var(--accent-red); font-size: 1.1rem; margin-bottom: 10px;">🛑 حاسبة التبريد الذكي واستراتيجية الخروج الآمن بدون خسارة</h3>
+        <div class="grid-2">
+          
+          <div style="background: var(--input-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--card-border);">
+            <h4 style="color: var(--accent-yellow); font-size: 0.95rem; margin-bottom: 6px;">🎯 التبريد عند الدعم الفعلي (S1):</h4>
+            <div style="font-size: 0.85rem; line-height: 1.7;">
+              <div>سعر التبريد المقترح (الدعم S1): <b id="coolPrice" style="color: #fff;">--</b></div>
+              <div><b>العدد المطلوب شراؤه للتبريد:</b> <b id="coolSharesCount" style="color: var(--accent-yellow); font-size: 1rem;">-- سهم</b></div>
+              <div>تكلفة التبريد الإضافية: <b id="coolTotalCost" style="color: var(--accent-blue);">-- ج.م</b></div>
+              <div>المتوسط الجديد للمحفظة: <b id="coolAvg" style="color: var(--accent-green);">-- ج.م</b></div>
+              <div><b>سعر الخروج للتعادل (بدون خسارة):</b> <b id="coolExit" style="color: var(--accent-green); font-size: 1rem;">-- ج.م</b></div>
+            </div>
+          </div>
+
+          <div style="background: var(--input-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--card-border);">
+            <h4 style="color: var(--accent-blue); font-size: 0.95rem; margin-bottom: 6px;">⚡ خطة الخروج التكتيكي (تخفيف 50%):</h4>
+            <div style="font-size: 0.85rem; line-height: 1.7;">
+              <div>كمية التخفيف (50% من المحفظة): <b id="tacticalQty" style="color: #fff;">-- سهم</b></div>
+              <div>سعر إعادة التجميع عند الدعم الثاني (S2): <b id="tacticalRebuy" style="color: var(--accent-blue);">-- ج.م</b></div>
+              <div>نسبة الارتداد المطلوبة للتعادل: <b id="tacticalBounce" style="color: var(--accent-green);">--</b></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- نافذة قائمة المفضلة -->
+  <div class="modal-overlay" id="favModal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeFavoritesModal()">✖</button>
+      <h3 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--accent-yellow);">⭐ قائمة المفضلة</h3>
+      <div id="fullFavList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <script>
+    const egxStocks = [
+      { name: "العربية للأسمنت", symbol: "ARCC", tvSymbol: "EGX:ARCC" },
+      { name: "البنك التجاري الدولي", symbol: "COMI", tvSymbol: "EGX:COMI" },
+      { name: "مجموعة طلعت مصطفى القابضة", symbol: "TMGH", tvSymbol: "EGX:TMGH" },
+      { name: "السويدي إلكتريك", symbol: "SWDY", tvSymbol: "EGX:SWDY" },
+      { name: "المجموعة المالية هيرميس", symbol: "HRHO", tvSymbol: "EGX:HRHO" },
+      { name: "أبو قير للأسمدة", symbol: "ABUK", tvSymbol: "EGX:ABUK" },
+      { name: "فوري للمدفوعات الإلكترونية", symbol: "FWRY", tvSymbol: "EGX:FWRY" },
+      { name: "سيدي كرير للبتروكيماويات", symbol: "SKPC", tvSymbol: "EGX:SKPC" },
+      { name: "بلتون المالية القابضة", symbol: "BTFH", tvSymbol: "EGX:BTFH" },
+      { name: "إي فاينانس للاستثمارات", symbol: "EFIH", tvSymbol: "EGX:EFIH" },
+      { name: "حديد عز", symbol: "ESRS", tvSymbol: "EGX:ESRS" }
+    ];
+
+    let currentStock = egxStocks[0];
+    let favorites = JSON.parse(localStorage.getItem('egx_favs')) || ["ARCC", "COMI", "TMGH", "SWDY", "FWRY"];
+    let currentTheme = localStorage.getItem('egx_theme') || 'dark';
+
+    function applyTheme(theme) {
+      currentTheme = theme;
+      localStorage.setItem('egx_theme', theme);
+      const htmlEl = document.documentElement;
+      document.getElementById('themeIcon').innerText = theme === 'light' ? "☀️" : "🌙";
+      document.getElementById('themeText').innerText = theme === 'light' ? "الوضع النهاري" : "الوضع الليلي";
+      
+      if (theme === 'light') {
+        htmlEl.classList.remove('dark');
+        htmlEl.classList.add('light');
+      } else {
+        htmlEl.classList.remove('light');
+        htmlEl.classList.add('dark');
+      }
+
+      if (currentStock) initChart(currentStock.tvSymbol);
+    }
+
+    function toggleTheme() {
+      applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    }
+
+    function initChart(symbol) {
+      document.getElementById("tradingview_chart").innerHTML = "";
+      new TradingView.widget({
+        "autosize": true,
+        "symbol": symbol,
+        "interval": "D",
+        "timezone": "Africa/Cairo",
+        "theme": currentTheme,
+        "style": "1",
+        "locale": "ar_AE",
+        "toolbar_bg": currentTheme === 'dark' ? "#131b2e" : "#ffffff",
+        "enable_publishing": false,
+        "allow_symbol_change": true,
+        "studies": [
+          "MACD@tv-basicstudies",
+          "Stochastic@tv-basicstudies",
+          "RSI@tv-basicstudies",
+          "PivotPointsHighLow@tv-basicstudies",
+          "MAExp@tv-basicstudies"
+        ],
+        "container_id": "tradingview_chart"
+      });
+
+      renderTradingViewTicker(symbol);
+    }
+
+    function renderTradingViewTicker(symbol) {
+      const container = document.getElementById('tv_ticker_widget');
+      container.innerHTML = `
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {
+            "symbol": "${symbol}",
+            "width": "100%",
+            "colorTheme": "${currentTheme}",
+            "isTransparent": true,
+            "locale": "ar_AE"
+          }
+          <\/script>
+        </div>
+      `;
+    }
+
+    // 🔹 دالة جلب الأسعار تلقائيًا عبر Yahoo Finance و AllOrigins Proxy
+    async function fetchLiveStockPrices(symbol) {
+      const statusEl = document.getElementById('apiStatus');
+      if (statusEl) {
+        statusEl.innerText = "🔄 جاري سحب الأسعار اللحظية...";
+        statusEl.style.color = "var(--accent-yellow)";
+      }
+
+      try {
+        const rawSymbol = symbol.replace("EGX:", "");
+        const yahooSymbol = `${rawSymbol}.CA`;
+        const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=1d`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("شبكة الـ Proxy لم تستجب");
+
+        const result = await response.json();
+        const data = JSON.parse(result.contents);
+
+        if (data && data.chart && data.chart.result && data.chart.result.length > 0) {
+          const meta = data.chart.result[0].meta;
+          const quote = data.chart.result[0].indicators.quote[0];
+
+          const high = meta.regularMarketDayHigh || quote.high[quote.high.length - 1];
+          const low = meta.regularMarketDayLow || quote.low[quote.low.length - 1];
+          const close = meta.regularMarketPrice || quote.close[quote.close.length - 1];
+
+          if (high && low && close) {
+            document.getElementById('targetHigh').value = parseFloat(high).toFixed(2);
+            document.getElementById('targetLow').value = parseFloat(low).toFixed(2);
+            document.getElementById('targetClose').value = parseFloat(close).toFixed(2);
+
+            if (statusEl) {
+              statusEl.innerText = "🟢 تم تحديث الأسعار تلقائيًا";
+              statusEl.style.color = "var(--accent-green)";
+            }
+
+            runCalculations();
+            return;
+          }
+        }
+        throw new Error("بيانات غير مكتملة");
+      } catch (error) {
+        console.warn("خطأ في جلب بيانات الأسعار:", error);
+        if (statusEl) {
+          statusEl.innerText = "⚠️ تعذر الجلب تلقائيًا (أدخل الأسعار يدويًا)";
+          statusEl.style.color = "var(--accent-red)";
+        }
+      }
+    }
+
+    function runCalculations() {
+      const buyPrice = parseFloat(document.getElementById('currentStockPrice').value) || 0;
+      const qty = parseInt(document.getElementById('currentStockQty').value) || 0;
+
+      const high = parseFloat(document.getElementById('targetHigh').value) || 0;
+      const low = parseFloat(document.getElementById('targetLow').value) || 0;
+
+      if (low > 0 && high > low) {
+        const range = high - low;
+        const target1 = low + (range * 0.718);
+        const target2 = low + (range * 1.128);
+        const target3 = low + (range * 1.728);
+
+        document.getElementById('calcRange').innerText = range.toFixed(2) + " ج.م";
+        document.getElementById('target1Val').innerText = target1.toFixed(2) + " ج.م";
+        document.getElementById('target2Val').innerText = target2.toFixed(2) + " ج.م";
+        document.getElementById('target3Val').innerText = target3.toFixed(2) + " ج.م";
+
+        const s1 = low;
+        const s2 = low - (range * 0.5);
+        const r1 = high;
+        const r2 = high + (range * 0.5);
+
+        document.getElementById('sr_s1').innerText = s1.toFixed(2) + " ج.م";
+        document.getElementById('sr_s2').innerText = s2.toFixed(2) + " ج.م";
+        document.getElementById('sr_r1').innerText = r1.toFixed(2) + " ج.م";
+        document.getElementById('sr_r2').innerText = r2.toFixed(2) + " ج.م";
+
+        if (buyPrice > 0) {
+          const coolPriceNum = s1;
+          const sharesToBuy = qty; 
+          const totalCoolingCost = sharesToBuy * coolPriceNum;
+          const newAveragePrice = ((buyPrice * qty) + totalCoolingCost) / (qty + sharesToBuy);
+          const exitWithoutLoss = newAveragePrice * 1.008;
+
+          document.getElementById('coolPrice').innerText = coolPriceNum.toFixed(2) + " ج.م";
+          document.getElementById('coolSharesCount').innerText = sharesToBuy + " سهم";
+          document.getElementById('coolTotalCost').innerText = totalCoolingCost.toLocaleString('ar-EG', {maximumFractionDigits: 2}) + " ج.م";
+          document.getElementById('coolAvg').innerText = newAveragePrice.toFixed(2) + " ج.م";
+          document.getElementById('coolExit').innerText = exitWithoutLoss.toFixed(2) + " ج.م";
+
+          document.getElementById('tacticalQty').innerText = Math.floor(qty / 2) + " سهم";
+          document.getElementById('tacticalRebuy').innerText = s2.toFixed(2) + " ج.م";
+          document.getElementById('tacticalBounce').innerText = "+" + (((buyPrice - s2) / s2) * 100).toFixed(1) + "%";
+        }
+      }
+    }
+
+    function openFavoritesModal() {
+      renderFullFavoritesList();
+      document.getElementById('favModal').style.display = 'flex';
+    }
+
+    function closeFavoritesModal() {
+      document.getElementById('favModal').style.display = 'none';
+    }
+
+    function renderFullFavoritesList() {
+      const favListContainer = document.getElementById('fullFavList');
+      const favList = egxStocks.filter(s => favorites.includes(s.symbol));
+      
+      if (favList.length === 0) {
+        favListContainer.innerHTML = "<div style='color: var(--text-muted); padding: 15px; text-align: center;'>لا توجد أسهم مضافة للمفضلة.</div>";
+        return;
+      }
+
+      favListContainer.innerHTML = favList.map(s => `
+        <div onclick='selectStockFromModal(${JSON.stringify(s)})' style="background: var(--input-bg); border: 1px solid var(--card-border); padding: 12px 15px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: bold; font-size: 0.95rem;">${s.name}</div>
+            <div style="font-size: 0.75rem; color: var(--accent-green); font-family: monospace;">${s.symbol}</div>
+          </div>
+          <span style="color: var(--accent-blue); font-size: 0.85rem;">فتح السهم ➔</span>
+        </div>
+      `).join('');
+    }
+
+    function selectStockFromModal(stock) {
+      selectStock(stock);
+      closeFavoritesModal();
+    }
+
+    function selectStock(stock) {
+      currentStock = stock;
+      document.getElementById('selectedStockName').innerText = stock.name;
+      document.getElementById('selectedStockSymbol').innerText = stock.tvSymbol;
+      
+      const rawSymbol = stock.symbol.replace("EGX:", "");
+      document.getElementById('tvExternalLink').href = `https://www.tradingview.com/symbols/EGX-${rawSymbol}/`;
+
+      document.getElementById('searchResults').style.display = 'none';
+      document.getElementById('searchInput').value = '';
+      
+      initChart(stock.tvSymbol);
+      updateFavBtnState();
+
+      // 🔹 سحب الأسعار تلقائيًا للسهم المختار
+      fetchLiveStockPrices(stock.tvSymbol);
+
+      runCalculations();
+    }
+
+    function filterStocks() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const resultsDiv = document.getElementById('searchResults');
+      
+      if (!query) {
+        resultsDiv.style.display = 'none';
+        return;
+      }
+
+      const filtered = egxStocks.filter(s => s.name.toLowerCase().includes(query) || s.symbol.toLowerCase().includes(query));
+      
+      if (filtered.length === 0) {
+        const customSymbol = query.toUpperCase();
+        resultsDiv.innerHTML = `
+          <div onclick='selectStock({name: "${customSymbol}", symbol: "${customSymbol}", tvSymbol: "EGX:${customSymbol}"})' class="search-item" style="color: var(--accent-green);">
+            <span>فتح أسعار وشارت TradingView لـ: <b>EGX:${customSymbol}</b></span>
+            <span>🔍 فتح</span>
+          </div>
+        `;
+      } else {
+        resultsDiv.innerHTML = filtered.map(s => `
+          <div onclick='selectStock(${JSON.stringify(s)})' class="search-item">
+            <span>${s.name}</span>
+            <span style="color: var(--accent-green); font-family: monospace;">${s.symbol}</span>
+          </div>
+        `).join('');
+      }
+      resultsDiv.style.display = 'block';
+    }
+
+    function toggleFavorite() {
+      const index = favorites.indexOf(currentStock.symbol);
+      if (index === -1) favorites.push(currentStock.symbol);
+      else favorites.splice(index, 1);
+      localStorage.setItem('egx_favs', JSON.stringify(favorites));
+      updateFavBtnState();
+    }
+
+    function updateFavBtnState() {
+      const isFav = favorites.includes(currentStock.symbol);
+      const btn = document.getElementById('favToggleBtn');
+      btn.innerText = isFav ? "★ مسجل بالمفضلة" : "☆ إضافة للمفضلة";
+      btn.style.color = isFav ? "var(--accent-yellow)" : "var(--text-muted)";
+    }
+
+    window.onload = () => {
+      applyTheme(currentTheme);
+      selectStock(egxStocks[0]);
+    };
+  </script>
+</body>
+</html>
